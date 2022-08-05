@@ -1,17 +1,14 @@
-from typing import Callable
+import os.path as osp
 
-import torch
-from torch.utils.data import Dataset
-
-from ntu_rgbd.utils import (
+from ntu_rgbd.download import download_ntu
+from ntu_rgbd.data import (
     load_path_list,
-    load_2d_skeleton,
-    load_3d_skeleton,
+    load_video,
     load_label,
 )
 
 
-class SkeletonDataset(Dataset):
+class NTURGBD:
     def __init__(
         self,
         root: str,
@@ -19,33 +16,38 @@ class SkeletonDataset(Dataset):
         benchmark: str = "xsub",
         split: str = "train",
         skeleton_dims: int = 3,
+        use_depth: bool = False,
         max_frames: int = 300,
         max_skeletons: int = 4,
-        transform: Callable = None,
+        download=False,
     ):
         self.max_frames = max_frames
         self.max_skeletons = max_skeletons
 
         assert skeleton_dims in [2, 3]
+        if use_depth:
+            assert skeleton_dims == 2
 
-        if skeleton_dims == 3:
-            self.load_skeleton = load_3d_skeleton
-        if skeleton_dims == 2:
-            self.load_skeleton = load_2d_skeleton
+        self.skeleton_dims = skeleton_dims
+        self.use_depth = use_depth
 
-        self.transform = transform
+        if download:
+            download_ntu(root, num_classes)
 
-        self.path_list = load_path_list(root, num_classes, benchmark, split)
+        self.path_list = load_path_list(
+            osp.join(root, "nturgb+d_skeletons"), num_classes, benchmark, split
+        )
 
     def __getitem__(self, idx):
         path = self.path_list[idx]
 
-        x = self.load_skeleton(path, self.max_frames, self.max_skeletons)
-        x = torch.Tensor(x)
-
-        if self.transform is not None:
-            x = self.transform(x)
-
+        x = load_video(
+            path,
+            self.max_frames,
+            self.max_skeletons,
+            self.skeleton_dims,
+            self.use_depth,
+        )
         y = load_label(path)
 
         return x, y

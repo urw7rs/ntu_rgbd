@@ -16,6 +16,9 @@ def main():
         python_requires=">=3.6",
         install_requires=[
             "numpy",
+            "beautifulsoup4",
+            "tqdm",
+            "requests",
         ],
     )
 

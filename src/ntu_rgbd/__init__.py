@@ -1,1 +1,1 @@
-from ntu_rgbd.datasets import SkeletonDataset
+from ntu_rgbd.datasets import NTURGBD
