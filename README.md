@@ -4,18 +4,26 @@
 
 ## Quick tour
 
-download skeleton datasets
-
-run `./scripts/extract.sh <path>` to extract files to path
+`pip install -e .` to install library
 
 ```
 >>> from ntu_rgbd import SkeletonDataset
 
->>> dataset = SkeletonDataset(root="skeletons")
+>>> dataset = NTURGBD(root="skeletons")
 ```
 
-## Installation
-
-`pip install -e .`
-
-###
+```
+class NTURGBD(Dataset):
+    def __init__(
+        self,
+        root: str,
+        num_classes: int = 60,
+        benchmark: str = "xsub",
+        split: str = "train",
+        skeleton_dims: int = 3,
+        max_frames: int = 300,
+        max_skeletons: int = 4,
+        transform: Callable = None,
+        download: bool = True,
+    ):
+```

@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from typing import List, Callable
+from typing import List
 from ntu_rgbd.missing_files import missing_files
 from ntu_rgbd.label_map import label_map
 
@@ -28,6 +28,8 @@ def load_path_list(
     root: str, num_classes: int, benchmark: str, split: str
 ) -> List[str]:
     """extracts all skeletons to the root folder in the expected format."""
+
+    assert split != "test"
 
     file_list_path = os.path.join(root, f"{num_classes}_{benchmark}_{split}.txt")
 
@@ -72,24 +74,12 @@ def load_path_list(
     return path_list
 
 
-def to_float(string_list: List[str]) -> List[float]:
-    return list(map(float, string_list))
-
-
-def load_xyz(line: str) -> List[float]:
-    return to_float(line.split()[:3])
-
-
-def load_depth_xy(line: str) -> List[float]:
-    return to_float(line.split()[3:5])
-
-
-def load_rgb_xy(line: str) -> List[float]:
-    return to_float(line.split()[5:7])
-
-
-def _load_skeleton(
-    path: str, max_frames: int, max_skeletons: int, load_fn: Callable
+def load_video(
+    path: str,
+    max_frames: int,
+    max_skeletons: int,
+    skeleton_dim: int,
+    use_depth: bool = False,
 ) -> List:
     with open(path, "r") as f:
         num_frames = int(f.readline())
@@ -107,7 +97,21 @@ def _load_skeleton(
                 skeleton = []
                 for _ in range(num_joints):
                     # [3]
-                    joint = load_fn(f.readline())
+                    line = f.readline()
+
+                    joint = line.split()
+
+                    if skeleton_dim == 3:
+                        joint = joint[:3]
+                    if skeleton_dim == 2:
+                        if use_depth:
+                            joint = joint[3:5]
+                        else:
+                            joint = joint[5:7]
+
+                    # convert strings to floats
+                    joint = list(map(float, joint))
+
                     # [num_joints, 3]
                     skeleton.append(joint)
                 # [num_skeletons, num_joints, 3]
@@ -116,12 +120,10 @@ def _load_skeleton(
             frames.append(skeletons)
 
     # [num_frames, num_skeletons, num_joints, coords]
-    padded = _pad_data(frames, max_frames, max_skeletons)
-    # [coords, num_frames, num_joints, num_skeletons]
-    return np.transpose(padded, (3, 0, 2, 1))
+    return pad_to_np(frames, max_frames, max_skeletons)
 
 
-def _pad_data(data: List, max_frames: int, max_skeletons: int):
+def pad_to_np(data: List, max_frames: int, max_skeletons: int):
     max_joints = 0
     max_coords = 0
 
@@ -144,14 +146,6 @@ def _pad_data(data: List, max_frames: int, max_skeletons: int):
             np_data[t, m] = np.array(skeleton)
 
     return np_data
-
-
-def load_3d_skeleton(path: str, max_frames: int, max_skeletons: int) -> List:
-    return _load_skeleton(path, max_frames, max_skeletons, load_xyz)
-
-
-def load_2d_skeleton(path: str, max_frames: int, max_skeletons: int) -> List:
-    return _load_skeleton(path, max_frames, max_skeletons, load_rgb_xy)
 
 
 def load_label(path: str) -> int:
