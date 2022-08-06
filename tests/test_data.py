@@ -1,7 +1,7 @@
 import os.path as osp
 import pytest
 
-from ntu_rgbd.data import load_path_list, load_video
+from ntu_rgbd.data import load_path_list, load_sequence
 
 
 @pytest.mark.parametrize("num_classes", [60, 120])
@@ -15,7 +15,7 @@ def test_load_path_list(num_classes, benchmark, split, skeleton_dims, max_frames
         root=tmp_path, num_classes=num_classes, benchmark=benchmark, split=split
     )
 
-    data = load_video(
+    data = load_sequence(
         osp.join(tmp_path, "nturgb+d_skeletons", "S017C003P015R001A058.skeleton"),
         max_frames,
         4,
