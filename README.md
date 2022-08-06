@@ -7,13 +7,13 @@
 `pip install -e .` to install library
 
 ```
->>> from ntu_rgbd import SkeletonDataset
+>>> from ntu_rgbd import NTURGBD
 
 >>> dataset = NTURGBD(root="skeletons")
 ```
 
 ```
-class NTURGBD(Dataset):
+class NTURGBD:
     def __init__(
         self,
         root: str,

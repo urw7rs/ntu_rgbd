@@ -74,7 +74,7 @@ def load_path_list(
     return path_list
 
 
-def load_video(
+def load_sequence(
     path: str,
     max_frames: int,
     max_skeletons: int,

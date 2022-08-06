@@ -3,7 +3,7 @@ import os.path as osp
 from ntu_rgbd.download import download_ntu
 from ntu_rgbd.data import (
     load_path_list,
-    load_video,
+    load_sequence,
     load_label,
 )
 
@@ -41,7 +41,7 @@ class NTURGBD:
     def __getitem__(self, idx):
         path = self.path_list[idx]
 
-        x = load_video(
+        x = load_sequence(
             path,
             self.max_frames,
             self.max_skeletons,
